@@ -32,7 +32,10 @@ export class ProductListComponent implements OnInit {
   ngOnInit(): void {
     this.products$ = this
                       .productService
-                      .products$;
+                      .products$
+                      .pipe(
+                        filter(products => products.length > 0)
+                      );
 
     this.productsNumber$ = this
                             .products$
@@ -51,10 +54,18 @@ export class ProductListComponent implements OnInit {
   }
 
   // Pagination
-  pageSize = 5;
+  productsToLoad = this.productService.productsToLoad;
+  pageSize = this.productsToLoad / 2;
   start = 0;
   end = this.pageSize;
   currentPage = 1;
+
+  loadMore() {
+    let skip = this.end;
+    let take = this.productsToLoad;
+
+    this.productService.initProducts(skip, take);
+  }
 
   previousPage() {
     this.start -= this.pageSize;
@@ -77,7 +88,7 @@ export class ProductListComponent implements OnInit {
 
   reset() {
     this.productService.resetList();
-    this.router.navigateByUrl('/products'); // self navigation to force data update
+    this.resetPagination();
   }
 
   resetPagination() {
